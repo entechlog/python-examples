@@ -1,0 +1,4 @@
+requests
+#translate
+#googletrans
+google_trans_new
