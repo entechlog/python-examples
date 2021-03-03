@@ -1,0 +1,10 @@
+# ignore all python files (.py) other than lambda_function.py and app.py
+*.py
+!app.py
+!lambda_function.py
+
+# ignore the password file used for manual build
+my_password.txt
+
+# Ignore the .dockerignore file
+.dockerignore

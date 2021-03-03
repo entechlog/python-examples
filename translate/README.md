@@ -1,6 +1,6 @@
-### Command to run the docker
+### Python command
 ```bash
-docker run -it --rm  -e file_name=test.xml -e src_lang_cd=zh-TW -e tgt_lang_cd=en entechlog/py-translate-app
+python /usr/src/lambda_function.py --file_name /data/sample.xml --src_lang_cd ${src_lang_cd} --tgt_lang_cd ${tgt_lang_cd}
 ```
 
 ### Command to copy files
@@ -8,9 +8,9 @@ docker run -it --rm  -e file_name=test.xml -e src_lang_cd=zh-TW -e tgt_lang_cd=e
 docker cp 5e9172129b2c:/usr/src/en_sample.xml C:\Users\nadesansiva\Downloads
 ```
 
-### Python command
+### Command to run the docker
 ```bash
-python /usr/src/lambda_function.py --file_name sample.xml --src_lang_cd ${src_lang_cd} --tgt_lang_cd ${tgt_lang_cd}
+docker run -it --rm  -e file_name=test.xml -e src_lang_cd=zh-TW -e tgt_lang_cd=en entechlog/py-translate-app
 ```
 
 ### Reference
