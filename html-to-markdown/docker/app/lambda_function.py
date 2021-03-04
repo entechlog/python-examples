@@ -3,6 +3,7 @@
 # import the required library 
 import html2markdown  
 from markdownify import markdownify as md
+import tomd
 
 # import defaults
 import os, sys, time
@@ -63,6 +64,9 @@ def process_conversion(file_name):
             output_file.write(md_str)
         elif converter == "markdownify":
             md_str = md(input_file)
+            output_file.write(md_str)
+        elif converter == "tomd":
+            md_str = tomd.Tomd(input_file.read()).markdown
             output_file.write(md_str)
         else:
             print("Not a valid converter")
