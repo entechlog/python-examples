@@ -2,6 +2,7 @@
 
 # import the required library 
 import html2markdown  
+from markdownify import markdownify as md
 
 # import defaults
 import os, sys, time
@@ -27,15 +28,23 @@ def parse_input():
     Uses py-translate to translate text from source to target language 
     """)
 
-    parser.add_argument("--file_name", help="Input File Name", required=True)
+    parser.add_argument("--file_name", help="Input file name", required=True)
+    parser.add_argument("--converter", help="html to markdown converter module to use", required=False)
 
     args = parser.parse_args()
 
     file_name = args.file_name
+    converter = args.converter
 
-    print("Input File Name              : ", file_name)
+    if converter:
+        converter=converter
+    else:
+        converter="markdownify"    
 
-    return file_name
+    print("Input file name              : ", file_name)
+    print("Converter module             : ", converter)
+
+    return file_name, converter
 
 def process_conversion(file_name):
     
@@ -48,10 +57,16 @@ def process_conversion(file_name):
     print("Output File Name             : ", output_file_name)
 
     with open(file_name, "r") as input_file:
-        md_str = html2markdown.convert(input_file)
-        output_file.write(md_str)
-        # print(md_str)
 
+        if converter == "html2markdown":
+            md_str = html2markdown.convert(input_file)
+            output_file.write(md_str)
+        elif converter == "markdownify":
+            md_str = md(input_file)
+            output_file.write(md_str)
+        else:
+            print("Not a valid converter")
+        
     return input_file, output_file
 
 def close_files(input_file, output_file):
@@ -64,7 +79,7 @@ if __name__ == "__main__":
     header_footer("started")
 
     # Parse the input
-    file_name = parse_input()
+    file_name, converter = parse_input()
 
     # Process the translation
     input_file, output_file = process_conversion(file_name)

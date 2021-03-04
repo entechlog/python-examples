@@ -21,5 +21,6 @@ COPY . .
 VOLUME /data
 
 ENV file_name "/data/sample.html"
+ENV converter "markdownify"
 
-CMD ["sh", "-c", "python /usr/src/lambda_function.py --file_name $file_name"]
+CMD ["sh", "-c", "python /usr/src/lambda_function.py --file_name $file_name --converter $converter"]

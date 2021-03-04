@@ -1,6 +1,8 @@
 ### Python command
 ```bash
 python /usr/src/lambda_function.py --file_name /data/sample.html
+python /usr/src/lambda_function.py --file_name /data/sample.html --converter markdownify
+python /usr/src/lambda_function.py --file_name /data/sample.html --converter html2markdown
 ```
 
 ### Command to copy files

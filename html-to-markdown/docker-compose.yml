@@ -7,15 +7,15 @@ services:
     image: entechlog/html-to-markdown-app
     container_name: html-to-markdown-app
     build: ./docker/app/
-    #env_file:
-    #  - ./docker/app/.env
+    env_file:
+      - ./.env
     command: 
       - bash 
       - -c 
       - |
         echo "Launching html-to-markdown-app"
         #
-        python /usr/src/lambda_function.py --file_name ${file_name}
+        python /usr/src/lambda_function.py --file_name ${file_name} --converter ${converter}
         #
         sleep infinity
     restart: unless-stopped
