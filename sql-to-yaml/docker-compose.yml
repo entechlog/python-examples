@@ -1,0 +1,24 @@
+---
+version: '3'
+
+services:
+              
+  sql-to-yaml-app:
+    image: entechlog/sql-to-yaml-app
+    container_name: sql-to-yaml-app
+    build: ./docker/app/
+    env_file:
+      - ./.env
+    command: 
+      - bash 
+      - -c 
+      - |
+        echo "Launching sql-to-yaml-app"
+        #
+        python /usr/src/lambda_function.py --file_name ${file_name} --formatter ${formatter}
+        #
+        sleep infinity
+    restart: unless-stopped
+    volumes:
+      - ./data:/data
+      
