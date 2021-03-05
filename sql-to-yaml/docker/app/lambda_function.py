@@ -8,7 +8,7 @@ import yaml
 import re
 
 # import defaults
-import os, sys, time
+import os, sys, time, logging
 import argparse
 import json
 import socket
@@ -42,7 +42,7 @@ def parse_input():
     if formatter:
         formatter=formatter
     else:
-        formatter="sql-formatter"    
+        formatter="sqlparse"    
 
     print("Input file name              : ", file_name)
     print("formatter module             : ", formatter)
@@ -81,18 +81,31 @@ def generate_yaml(output_sql_file_name):
 
     with open(output_sql_file_name, "r") as formatted_sql_file:
         full_statements = sqlparse.split(formatted_sql_file.read())
+        # print(full_statements)
         # Process a CREATE statement
         for individual_statement in full_statements[0].split(';'):
+            # print(individual_statement)
             if "CREATE TABLE" in individual_statement or "CREATE VIEW" in individual_statement:
-                object_regex = r"([A-Z_]*)\W+"
-                object_details = re.findall(object_regex, individual_statement.split('(')[1])
-                print("Object type                  : ",object_details[2])
-                print("Database name                : ",object_details[3])
-                print("Schema name                  : ",object_details[4])
-                print("Object name                  : ",object_details[-1])
+                object_regex1 = r"(?i)CREATE.* \("
+                object_regex2 = r"(?i)[^.(][A-Z_0-9]* *"
+                object_details1 = re.findall(object_regex1, individual_statement)[0]
+                object_details2 = re.findall(object_regex2,object_details1)
+                print("object_details               : ",object_details1)
+                print("object_details               : ",object_details2)
+                print("Length of object array       : ",str(len(object_details2)))
+                try:
+                    print("Object type                  : ",object_details2[1])
+                    print("Database name                : ",object_details2[2])
+                    print("Schema name                  : ",object_details2[3])
+                    print("Object name                  : ",object_details2[-1])
+                except:
+                    if len(object_details2) == 3:
+                        logging.warning("DDL is missing database and schema details")
+                    else:
+                        logging.warning("Could not parse the object details")
                 # Process each attribute in a CREATE statement
                 attribute_count = 0
-                attribute_regex = r"([A-Z_a-z0-9(),]*)\W+"
+                attribute_regex = r"(?i)([A-Z_a-z0-9(),]*)\W+"
                 for sql_line in individual_statement.split(' ,'):
                     attribute_count = attribute_count + 1
                     attribute_details=re.findall(attribute_regex, sql_line)
