@@ -17,4 +17,4 @@ docker run -it --rm  -e file_name=/data/sample.sql entechlog/html-to-markdown-ap
 
 ### Reference
 https://github.com/PabloRMira/sql_formatter
-
+https://fangpenlin.com/posts/2012/08/26/good-logging-practice-in-python/
