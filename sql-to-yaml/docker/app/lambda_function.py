@@ -8,11 +8,18 @@ import yaml
 import re
 
 # import defaults
-import os, sys, time, logging
+import os, sys, time
 import argparse
 import json
 import socket
 import datetime
+
+# Setup logging
+import logging
+import logging.config
+
+logging.config.fileConfig(fname='log.conf')
+logger = logging.getLogger(__name__)
 
 def header_footer(process):
     # Display the program start time
@@ -65,7 +72,7 @@ def process_format_sql(file_name):
             formatted_sql = format_sql(input_sql_file.read())
             output_sql_file.write(formatted_sql)
         elif formatter == "sqlparse":
-            formatted_sql = sqlparse.format(input_sql_file.read(), keyword_case='upper', reindent=True, reindent_aligned=True,indent_tabs=True,output_format='python')
+            formatted_sql = sqlparse.format(input_sql_file.read(), keyword_case='upper', reindent=True, reindent_aligned=True,indent_tabs=True,output_format='python',comma_first=True)
             output_sql_file.write(formatted_sql)
         else:
             print("Not a valid formatter")
@@ -81,38 +88,76 @@ def generate_yaml(output_sql_file_name):
 
     with open(output_sql_file_name, "r") as formatted_sql_file:
         full_statements = sqlparse.split(formatted_sql_file.read())
+        
+        # empty dictionary
+        schema_dict = {}
+
+        schema_dict['version'] = 2
+        schema_dict['models'] = []
+
+        model_counter = -1
+
         # print(full_statements)
         # Process a CREATE statement
         for individual_statement in full_statements[0].split(';'):
             # print(individual_statement)
             if "CREATE TABLE" in individual_statement or "CREATE VIEW" in individual_statement:
-                object_regex1 = r"(?i)CREATE.* \("
-                object_regex2 = r"(?i)[^.(][A-Z_0-9]* *"
-                object_details1 = re.findall(object_regex1, individual_statement)[0]
-                object_details2 = re.findall(object_regex2,object_details1)
-                print("object_details               : ",object_details1)
-                print("object_details               : ",object_details2)
-                print("Length of object array       : ",str(len(object_details2)))
+                object_identify_regex = r"(?i)CREATE.* \("
+                object_split_regex = r"(?i)[^.(][A-Z_0-9]* *"
+                object_details = re.findall(object_identify_regex, individual_statement)[0]
+                object_details_list = re.findall(object_split_regex,object_details)
+                # Debug Logging
+                # print("object_details               : ",object_details)
+                # print("object_details               : ",object_details_list)
+                # print("Length of object array       : ",str(len(object_details_list)))
+                valid_object_name = True
                 try:
-                    print("Object type                  : ",object_details2[1])
-                    print("Database name                : ",object_details2[2])
-                    print("Schema name                  : ",object_details2[3])
-                    print("Object name                  : ",object_details2[-1])
+                    object_type = object_details_list[1].strip()
+                    database_name = object_details_list[2].strip()
+                    schema_name = object_details_list[3].strip()
+                    object_name = object_details_list[-1].strip()
+
+                    logging.info ("object_type            : {0}".format(object_type))
+                    logging.info ("database_name          : {0}".format(database_name))
+                    logging.info ("schema_name            : {0}".format(schema_name))
+                    logging.info ("object_name            : {0}".format(object_name))
+
+                    models_name = {'name':object_name}
+                    schema_dict['models'].append(models_name)
+                    model_counter = model_counter + 1
                 except:
-                    if len(object_details2) == 3:
+                    valid_object_name = False
+                    if len(object_details_list) == 3:
                         logging.warning("DDL is missing database and schema details")
                     else:
                         logging.warning("Could not parse the object details")
-                # Process each attribute in a CREATE statement
-                attribute_count = 0
-                attribute_regex = r"(?i)([A-Z_a-z0-9(),]*)\W+"
-                for sql_line in individual_statement.split(' ,'):
-                    attribute_count = attribute_count + 1
-                    attribute_details=re.findall(attribute_regex, sql_line)
-                    if attribute_count > 1:
-                        print("Attribute name               : ",attribute_details[1])
-                        print("Type name                    : ",attribute_details[2])
-        
+
+                if valid_object_name:
+                    # Process each attribute in a CREATE statement
+                    attribute_count = 0
+                    attribute_regex = r"(?i)[^, ][A-Z_0-9(),.]*"
+                    sql_line_regex = r"(?i)[A-Z_0-9].*,"
+                    schema_dict['models'][model_counter]['columns'] = []
+                    # Identify attributes by spliting the individuals sql statements ending by comma
+                    for sql_line in re.findall(sql_line_regex, individual_statement):
+                        
+                        logging.debug ("sql_line                     : {0}".format(sql_line))
+                        
+                        attribute_count = attribute_count + 1
+                        attribute_details=re.findall(attribute_regex, sql_line)
+                        attribute_name = attribute_details[0].strip()
+                        attribute_type = attribute_details[1].strip()
+                        
+                        logging.debug ("attribute_details     : {0}".format(attribute_details))
+                        logging.info ("attribute_name         : {0}".format(attribute_name))
+                        logging.info ("attribute_type         : {0}".format(attribute_type))
+                        
+                        column_name = {'name':attribute_name}
+                        schema_dict['models'][model_counter]['columns'].append(column_name)
+    
+    schema_yaml = yaml.dump(schema_dict,default_flow_style=False, sort_keys=False)
+    print("schema_dict                  : ",schema_dict)    
+    print("schema_yaml                  : \n",schema_yaml)    
     return output_yaml_file_name, output_yaml_file
 
 def close_files(input_sql_file, output_sql_file, output_yaml_file):
@@ -140,5 +185,4 @@ if __name__ == "__main__":
     # Close files
     close_files(input_sql_file, output_sql_file, output_yaml_file)
     
-
     sys.exit()
