@@ -1,5 +1,5 @@
 CREATE TABLE ABC.XYZ.students_test (
-    id integer,
+    id integer NOT NULL,
     first_name text,
     last_name text,
     street text,

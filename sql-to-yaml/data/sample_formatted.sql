@@ -1,12 +1,12 @@
-sql = 'CREATE TABLE ABC.XYZ.students_test (
-    id integer,
+sql = ('CREATE TABLE ABC.XYZ.students_test (
+    id integer NOT NULL,
     first_name text,
     last_name text,
     street text,
     city text,
     st text,
     zip text
-);'
+);')
 sql2 = ' '
         'CREATE DATABASE numismatics;'
 sql3 = (' '
