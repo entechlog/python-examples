@@ -1,7 +1,7 @@
 sql = ('CREATE TABLE ABC.XYZ.students_test (
-    id integer NOT NULL,
+    id integer PRIMARY KEY,
     first_name text,
-    last_name text,
+    last_name text NOT NULL,
     street text,
     city text,
     st text,

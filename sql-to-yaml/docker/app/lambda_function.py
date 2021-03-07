@@ -159,10 +159,15 @@ def generate_yaml(output_sql_file_name):
                         column_name = {'name':attribute_name}
                         schema_dict['models'][model_counter]['columns'].append(column_name)
 
-                        schema_dict['models'][model_counter]['columns'][attribute_count]['tests'] = []
-                        if "NOT NULL" in sql_line:
-                            schema_dict['models'][model_counter]['columns'][attribute_count]['tests'].append('not_null')
-    
+                        valid_tests = ["NOT NULL", "PRIMARY KEY"]
+
+                        if any(x in sql_line for x in valid_tests) :
+                            schema_dict['models'][model_counter]['columns'][attribute_count]['tests'] = []
+                            if "NOT NULL" in sql_line:
+                                schema_dict['models'][model_counter]['columns'][attribute_count]['tests'].append('not_null')
+                            elif "PRIMARY KEY" in sql_line:
+                                schema_dict['models'][model_counter]['columns'][attribute_count]['tests'].append('unique')
+
     schema_yaml = yaml.dump(schema_dict,default_flow_style=False, sort_keys=False)
     
     logging.debug ("schema_dict            : {0}".format(schema_dict))
