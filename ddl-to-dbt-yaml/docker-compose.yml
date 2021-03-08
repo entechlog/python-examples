@@ -3,9 +3,9 @@ version: '3'
 
 services:
               
-  sql-to-yaml-app:
-    image: entechlog/sql-to-yaml-app
-    container_name: sql-to-yaml-app
+  ddl-to-dbt-yaml:
+    image: entechlog/ddl-to-dbt-yaml
+    container_name: ddl-to-dbt-yaml
     build: ./docker/app/
     env_file:
       - ./.env
@@ -13,7 +13,7 @@ services:
       - bash 
       - -c 
       - |
-        echo "Launching sql-to-yaml-app"
+        echo "Launching ddl-to-dbt-yaml"
         #
         python /usr/src/lambda_function.py --file_name ${file_name} --formatter ${formatter}
         #

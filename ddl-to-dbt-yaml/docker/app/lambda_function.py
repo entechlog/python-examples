@@ -103,8 +103,11 @@ def generate_yaml(output_sql_file_name):
         for individual_statement in full_statements[0].split(';'):
             
             logging.debug ("individual_statement   : {0}".format(individual_statement))
+            
+            valid_ddl = ["CREATE TABLE", "CREATE VIEW"]
+            
+            if any(x in individual_statement for x in valid_ddl):
 
-            if "CREATE TABLE" in individual_statement or "CREATE VIEW" in individual_statement:
                 object_identify_regex = r"(?i)CREATE.* \("
                 object_split_regex = r"(?i)[^.(][A-Z_0-9]* *"
                 object_details = re.findall(object_identify_regex, individual_statement)[0]
@@ -128,6 +131,7 @@ def generate_yaml(output_sql_file_name):
 
                     models_name = {'name':object_name}
                     schema_dict['models'].append(models_name)
+                    schema_dict['models'][model_counter]['description'] = "{{ doc("+schema_name+"_"+object_name+") }}"
                     model_counter = model_counter + 1
                 except:
                     valid_object_name = False
@@ -152,7 +156,7 @@ def generate_yaml(output_sql_file_name):
                         attribute_name = attribute_details[0].strip()
                         attribute_type = attribute_details[1].strip()
                         
-                        logging.info ("attribute_details     : {0}".format(attribute_details))
+                        logging.info  ("attribute_details      : {0}".format(attribute_details))
                         logging.debug ("attribute_name         : {0}".format(attribute_name))
                         logging.debug ("attribute_type         : {0}".format(attribute_type))
                         
@@ -161,7 +165,7 @@ def generate_yaml(output_sql_file_name):
 
                         valid_tests = ["NOT NULL", "PRIMARY KEY"]
 
-                        if any(x in sql_line for x in valid_tests) :
+                        if any(x in sql_line for x in valid_tests):
                             schema_dict['models'][model_counter]['columns'][attribute_count]['tests'] = []
                             if "NOT NULL" in sql_line:
                                 schema_dict['models'][model_counter]['columns'][attribute_count]['tests'].append('not_null')
@@ -171,8 +175,9 @@ def generate_yaml(output_sql_file_name):
     schema_yaml = yaml.dump(schema_dict,default_flow_style=False, sort_keys=False)
     
     logging.debug ("schema_dict            : {0}".format(schema_dict))
-    logging.info  ("schema_yaml            : \n{0}".format(schema_yaml))    
-    
+    logging.info  ("schema_yaml            : \n{0}".format(schema_yaml))
+
+    output_yaml_file.write(schema_yaml)
     return output_yaml_file_name, output_yaml_file
 
 def close_files(input_sql_file, output_sql_file, output_yaml_file):

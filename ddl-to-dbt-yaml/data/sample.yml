@@ -1,0 +1,13 @@
+version: 2
+models:
+- name: students_test
+  description: '{{ doc(XYZ_students_test) }}'
+  columns:
+  - name: id
+  - name: first_name
+  - name: last_name
+    tests:
+    - not_null
+  - name: street
+  - name: city
+  - name: st
